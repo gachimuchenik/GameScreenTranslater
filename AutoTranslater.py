@@ -113,8 +113,13 @@ def crop(image):
 
 
 def preprocessing(image):
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    _, image = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    lower_white = np.array([200, 210, 230])
+    upper_white = np.array([255, 255, 255])
+    mask = cv2.inRange(image, lower_white, upper_white)
+    image = cv2.bitwise_and(image, image, mask=mask)
+    image[np.where((image == [0, 0, 0]).all(axis=2))] = [0, 0, 0]
+    image = cv2.bitwise_not(image)
     image = cv2.medianBlur(image, 3)
     image = cv2.filter2D(image, -1, sharpening_kernel)
     tr(image)
@@ -143,6 +148,7 @@ def preprocessing_cutscene(image):
     image = cv2.medianBlur(image, 3)
     image = cv2.filter2D(image, -1, sharpening_kernel)
     tr_cut_mess(image)
+
 
 def preprocessing_message(image):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
