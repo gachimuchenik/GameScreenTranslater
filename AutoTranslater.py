@@ -9,6 +9,7 @@ import numpy as np
 import re
 import keyboard
 import pyautogui
+import textwrap
 
 custom_conf = "--psm 11 --oem 1"
 translator = Translator()
@@ -20,6 +21,7 @@ sharpening_kernel = np.array([
 preset = 1
 last_result = None
 last_phone = None
+limit = 140
 
 
 def tr(image):
@@ -31,11 +33,15 @@ def tr(image):
             text = re.sub("\n", " - ", result, count=1)
             text = re.sub("\n", " ", text)
             text = text.replace('|', 'I')
+            wr_text = textwrap.wrap(text, width=limit)
             print(Fore.RED + '--en--')
-            print(Fore.RED + text)
+            for line in wr_text:
+                print(Fore.RED + line)
             translate = translator.translate(text, dest='ru')
+            wr_translate = textwrap.wrap(translate.text, width=limit)
             print(Fore.GREEN + '--ru--')
-            print(Fore.GREEN + translate.text)
+            for line in wr_translate:
+                print(Fore.GREEN + line)
             last_result = result
         except:
             pass
@@ -51,12 +57,16 @@ def tr_phone(image, image_phone):
             ptext = re.sub("\n", " - ", phone, count=1)
             ptext = re.sub("\n", " ", ptext)
             ptext = ptext.replace('|', 'I')
+            wr_text = textwrap.wrap(ptext, width=limit)
             print(Fore.CYAN + 'Phone')
             print(Fore.RED + '--en--')
-            print(Fore.RED + ptext)
+            for line in wr_text:
+                print(Fore.RED + line)
             translate = translator.translate(ptext, dest='ru')
+            wr_translate = textwrap.wrap(translate.text, width=limit)
             print(Fore.GREEN + '--ru--')
-            print(Fore.GREEN + translate.text)
+            for line in wr_translate:
+                print(Fore.GREEN + line)
             last_phone = phone
         except:
             pass
@@ -66,12 +76,16 @@ def tr_phone(image, image_phone):
             text = re.sub("\n", " - ", result, count=1)
             text = re.sub("\n", " ", text)
             text = text.replace('|', 'I')
+            wr_text = textwrap.wrap(text, width=limit)
             print(Fore.CYAN + 'Kiruy')
             print(Fore.RED + '--en--')
-            print(Fore.RED + text)
+            for line in wr_text:
+                print(Fore.RED + line)
             translate = translator.translate(text, dest='ru')
+            wr_translate = textwrap.wrap(translate.text, width=limit)
             print(Fore.GREEN + '--ru--')
-            print(Fore.GREEN + translate.text)
+            for line in wr_translate:
+                print(Fore.GREEN + line)
             last_result = result
         except:
             pass
@@ -85,11 +99,15 @@ def tr_cut_mess(image):
         try:
             text = re.sub("\n", " ", result)
             text = text.replace('|', 'I')
+            wr_text = textwrap.wrap(text, width=limit)
             print(Fore.RED + '--en--')
-            print(Fore.RED + text)
+            for line in wr_text:
+                print(Fore.RED + line)
             translate = translator.translate(text, dest='ru')
+            wr_translate = textwrap.wrap(translate.text, width=limit)
             print(Fore.GREEN + '--ru--')
-            print(Fore.GREEN + translate.text)
+            for line in wr_translate:
+                print(Fore.GREEN + line)
             last_result = result
         except:
             pass
@@ -113,11 +131,15 @@ def crop(image):
 
 
 def preprocessing(image):
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    _, image = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    lower_white = np.array([180, 180, 210])
+    upper_white = np.array([255, 255, 255])
+    mask = cv2.inRange(image, lower_white, upper_white)
+    image = cv2.bitwise_and(image, image, mask=mask)
+    image[np.where((image == [0, 0, 0]).all(axis=2))] = [0, 0, 0]
+    image = cv2.bitwise_not(image)
     image = cv2.medianBlur(image, 3)
     image = cv2.filter2D(image, -1, sharpening_kernel)
-    tr(image)
     tr(image)
 
 
