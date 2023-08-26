@@ -137,8 +137,8 @@ def preprocessing_phone():
     _, image_phone = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
     image_phone = cv2.medianBlur(image_phone, 3)
     image_phone = cv2.filter2D(image_phone, -1, sharpening_kernel)
-    cv2.imwrite('image.png', image)
-    cv2.imwrite('imagephone.png', image_phone)
+    # cv2.imwrite('image.png', image)
+    # cv2.imwrite('imagephone.png', image_phone)
     tr_phone(image, image_phone)
 
 
@@ -153,48 +153,57 @@ def preprocessing_cutscene():
     result = cv2.bitwise_not(result)
     result = cv2.medianBlur(result, 3)
     result = cv2.filter2D(result, -1, sharpening_kernel)
-    cv2.imwrite('test.png', result)
+    # cv2.imwrite('test.png', result)
     tr_cut(result)
 
 
-def switch_case_dialog():
-    global preset
-    preset = 1
-    print(Fore.YELLOW + 'preset - dialog')
-
-
-def switch_case_phone_dialog():
-    global preset
-    preset = 2
-    print(Fore.YELLOW + 'preset - phone dialog')
-
-
-def switch_case_cutscene():
-    global preset
-    preset = 3
-    print(Fore.YELLOW + 'preset - cutscene')
-
-
-dialog_key = 'z'
-phone_dialog_key = 'x'
-cutscene_key = 'c'
-keyboard.add_hotkey(dialog_key, switch_case_dialog)
-keyboard.add_hotkey(phone_dialog_key, switch_case_phone_dialog)
-keyboard.add_hotkey(cutscene_key, switch_case_cutscene)
+# def switch_case_dialog():
+#     global preset
+#     preset = 1
+#     print(Fore.YELLOW + 'preset - dialog')
+#
+#
+# def switch_case_phone_dialog():
+#     global preset
+#     preset = 2
+#     print(Fore.YELLOW + 'preset - phone dialog')
+#
+#
+# def switch_case_cutscene():
+#     global preset
+#     preset = 3
+#     print(Fore.YELLOW + 'preset - cutscene')
+#
+#
+# dialog_key = 'z'
+# phone_dialog_key = 'x'
+# cutscene_key = 'c'
+# keyboard.add_hotkey(dialog_key, switch_case_dialog)
+# keyboard.add_hotkey(phone_dialog_key, switch_case_phone_dialog)
+# keyboard.add_hotkey(cutscene_key, switch_case_cutscene)
 
 
 def main():
+    global preset
     block_number = 1
     last_clipboard_image = ImageGrab.grabclipboard()
     while True:
         if block_number == 'auto':
             while True:
                 screen = pyautogui.screenshot()
-                screen.save('screen.png', 'png')
                 crop(screen)
                 sleep(0.5)
                 if keyboard.is_pressed('f'):
                     break
+                if keyboard.is_pressed('z'):
+                    preset = 1
+                    print(Fore.YELLOW + 'preset - dialog')
+                if keyboard.is_pressed('x'):
+                    preset = 2
+                    print(Fore.YELLOW + 'preset - phone dialog')
+                if keyboard.is_pressed('c'):
+                    preset = 3
+                    print(Fore.YELLOW + 'preset - cutscene')
         elif block_number == 'screen':
             while True:
                 clipboard_image = ImageGrab.grabclipboard()
@@ -204,6 +213,15 @@ def main():
                 sleep(0.5)
                 if keyboard.is_pressed('f'):
                     break
+                if keyboard.is_pressed('z'):
+                    preset = 1
+                    print(Fore.YELLOW + 'preset - dialog')
+                if keyboard.is_pressed('x'):
+                    preset = 2
+                    print(Fore.YELLOW + 'preset - phone dialog')
+                if keyboard.is_pressed('c'):
+                    preset = 3
+                    print(Fore.YELLOW + 'preset - cutscene')
         block_number = 'auto' if block_number == 'screen' else 'screen'
         print(Fore.YELLOW + block_number)
 
