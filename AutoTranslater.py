@@ -1,15 +1,13 @@
-from threading import Thread
-from time import sleep
+import pyautogui
 from PIL import ImageGrab
 from googletrans import Translator
 import pytesseract
-from colorama import Fore
 import cv2
 import numpy as np
 import re
 import keyboard
-import pyautogui
 import textwrap
+import tkinter as tk
 
 custom_conf = "--psm 11 --oem 1"
 translator = Translator()
@@ -22,6 +20,40 @@ preset = 1
 last_result = None
 last_phone = None
 limit = 140
+block_number = 'screen'
+exit_flag = False
+
+root = tk.Tk()
+root.title("Translator")
+root.configure(bg='black')
+root.geometry("1200x800")
+label_list = []
+custom_font = ('Arial', 12)
+canvas = tk.Canvas(root, bg='black', highlightthickness=0)
+canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+scrollbar = tk.Scrollbar(root, orient=tk.VERTICAL, command=canvas.yview)
+scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+canvas.configure(yscrollcommand=scrollbar.set)
+
+frame = tk.Frame(canvas, bg='black')
+canvas.create_window((0, 0), window=frame, anchor='nw', width=1200, height=800)
+
+listbox = tk.Listbox(frame, bg='black', fg='white', font=custom_font, selectbackground='black',
+                     selectforeground='white')
+listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+
+def custom_print(text, color):
+    listbox.insert(tk.END, text)
+    listbox.itemconfig(tk.END, {'fg': color})
+    listbox.see(tk.END)
+
+
+def on_close():
+    global exit_flag
+    exit_flag = True
+    root.destroy()
 
 
 def tr(image):
@@ -34,14 +66,14 @@ def tr(image):
             text = re.sub("\n", " ", text)
             text = text.replace('|', 'I')
             wr_text = textwrap.wrap(text, width=limit)
-            print(Fore.RED + '--en--')
+            custom_print('--en--', 'red')
             for line in wr_text:
-                print(Fore.RED + line)
+                custom_print(line, 'white')
             translate = translator.translate(text, dest='ru')
             wr_translate = textwrap.wrap(translate.text, width=limit)
-            print(Fore.GREEN + '--ru--')
+            custom_print('--ru--', 'green')
             for line in wr_translate:
-                print(Fore.GREEN + line)
+                custom_print(line, 'white')
             last_result = result
         except:
             pass
@@ -58,15 +90,15 @@ def tr_phone(image, image_phone):
             ptext = re.sub("\n", " ", ptext)
             ptext = ptext.replace('|', 'I')
             wr_text = textwrap.wrap(ptext, width=limit)
-            print(Fore.CYAN + 'Phone')
-            print(Fore.RED + '--en--')
+            custom_print('Phone', 'cyan')
+            custom_print('--en--', 'red')
             for line in wr_text:
-                print(Fore.RED + line)
+                custom_print(line, 'white')
             translate = translator.translate(ptext, dest='ru')
             wr_translate = textwrap.wrap(translate.text, width=limit)
-            print(Fore.GREEN + '--ru--')
+            custom_print('--ru--', 'green')
             for line in wr_translate:
-                print(Fore.GREEN + line)
+                custom_print(line, 'white')
             last_phone = phone
         except:
             pass
@@ -77,15 +109,15 @@ def tr_phone(image, image_phone):
             text = re.sub("\n", " ", text)
             text = text.replace('|', 'I')
             wr_text = textwrap.wrap(text, width=limit)
-            print(Fore.CYAN + 'Kiruy')
-            print(Fore.RED + '--en--')
+            custom_print('Kiruy', 'cyan')
+            custom_print('--en--', 'red')
             for line in wr_text:
-                print(Fore.RED + line)
+                custom_print(line, 'white')
             translate = translator.translate(text, dest='ru')
             wr_translate = textwrap.wrap(translate.text, width=limit)
-            print(Fore.GREEN + '--ru--')
+            custom_print('--ru--', 'green')
             for line in wr_translate:
-                print(Fore.GREEN + line)
+                custom_print(line, 'white')
             last_result = result
         except:
             pass
@@ -100,14 +132,14 @@ def tr_cut_mess(image):
             text = re.sub("\n", " ", result)
             text = text.replace('|', 'I')
             wr_text = textwrap.wrap(text, width=limit)
-            print(Fore.RED + '--en--')
+            custom_print('--en--', 'red')
             for line in wr_text:
-                print(Fore.RED + line)
+                custom_print(line, 'white')
             translate = translator.translate(text, dest='ru')
             wr_translate = textwrap.wrap(translate.text, width=limit)
-            print(Fore.GREEN + '--ru--')
+            custom_print('--ru--', 'green')
             for line in wr_translate:
-                print(Fore.GREEN + line)
+                custom_print(line, 'white')
             last_result = result
         except:
             pass
@@ -176,57 +208,58 @@ def preprocessing_message(image):
     tr_cut_mess(image)
 
 
-def main():
-    global preset
-    block_number = 1
-    last_clipboard_image = ImageGrab.grabclipboard()
-    while True:
-        if block_number == 'auto':
-            while True:
-                screen = pyautogui.screenshot()
-                screen = np.array(screen)
-                crop(screen)
-                sleep(0.5)
-                if keyboard.is_pressed('f'):
-                    break
-                if keyboard.is_pressed('z'):
-                    preset = 1
-                    print(Fore.YELLOW + 'preset - dialog')
-                if keyboard.is_pressed('x'):
-                    preset = 2
-                    print(Fore.YELLOW + 'preset - phone dialog')
-                if keyboard.is_pressed('c'):
-                    preset = 3
-                    print(Fore.YELLOW + 'preset - cutscene')
-                if keyboard.is_pressed('v'):
-                    preset = 4
-                    print(Fore.YELLOW + 'preset - message')
-        elif block_number == 'screen':
-            while True:
-                clipboard_image = ImageGrab.grabclipboard()
-                if clipboard_image is not None and clipboard_image != last_clipboard_image:
-                    screen = np.array(clipboard_image)
-                    crop(screen)
-                    last_clipboard_image = clipboard_image
-                sleep(0.5)
-                if keyboard.is_pressed('f'):
-                    break
-                if keyboard.is_pressed('z'):
-                    preset = 1
-                    print(Fore.YELLOW + 'preset - dialog')
-                if keyboard.is_pressed('x'):
-                    preset = 2
-                    print(Fore.YELLOW + 'preset - phone dialog')
-                if keyboard.is_pressed('c'):
-                    preset = 3
-                    print(Fore.YELLOW + 'preset - cutscene')
-                if keyboard.is_pressed('v'):
-                    preset = 4
-                    print(Fore.YELLOW + 'preset - message')
-        block_number = 'auto' if block_number == 'screen' else 'screen'
-        print(Fore.YELLOW + block_number)
+def process_clipboard():
+    global block_number, last_clipboard_image
+    clipboard_image = ImageGrab.grabclipboard()
+    if clipboard_image is not None and clipboard_image != last_clipboard_image:
+        screen = np.array(clipboard_image)
+        crop(screen)
+        last_clipboard_image = clipboard_image
+    if block_number == 'screen' and not exit_flag:
+        root.after(500, process_clipboard)
+    else:
+        root.after(500, auto_capture())
 
 
-thread = Thread(target=main)
-thread.start()
-thread.join()
+def auto_capture():
+    screen = pyautogui.screenshot()
+    screen = np.array(screen)
+    crop(screen)
+    if block_number == 'auto' and not exit_flag:
+        root.after(500, auto_capture)
+    else:
+        root.after(500, process_clipboard())
+
+
+def check_keyboard():
+    global block_number, preset, exit_flag
+    if keyboard.is_pressed('a'):
+        block_number = 'auto'
+        custom_print(block_number, 'yellow')
+    if keyboard.is_pressed('s'):
+        block_number = 'screen'
+        custom_print(block_number, 'yellow')
+    if keyboard.is_pressed('z'):
+        preset = 1
+        custom_print('preset - dialog', 'yellow')
+    if keyboard.is_pressed('x'):
+        preset = 2
+        custom_print('preset - phone dialog', 'yellow')
+    if keyboard.is_pressed('c'):
+        preset = 3
+        custom_print('preset - cutscene', 'yellow')
+    if keyboard.is_pressed('v'):
+        preset = 4
+        custom_print('preset - message', 'yellow')
+    if keyboard.is_pressed('q'):
+        exit_flag = True
+        root.destroy()
+    if not exit_flag:
+        root.after(100, check_keyboard)
+
+
+last_clipboard_image = ImageGrab.grabclipboard()
+root.protocol("WM_DELETE_WINDOW", on_close)
+root.after(0, process_clipboard)
+root.after(0, check_keyboard)
+root.mainloop()
